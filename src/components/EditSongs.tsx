@@ -1,5 +1,5 @@
 import React from "react";
-import { useSetRecoilState, useRecoilState } from "recoil";
+import { useSetRecoilState, useRecoilState, useRecoilValue } from "recoil";
 import styled from "styled-components";
 import { EditSongBoolean, songs } from "../Atoms";
 import { useForm } from "react-hook-form";
@@ -73,7 +73,7 @@ const InputBox = styled.form`
     margin-top: 1rem;
     border: none;
     border-bottom: 0.1rem solid #000;
-    width: 24rem;
+    width: 100%;
     font-size: 1rem;
     &:placehorder {
       color: #888;
@@ -88,6 +88,7 @@ const InputBox = styled.form`
 const Input = styled.div`
   display: flex;
   flex-direction: column;
+  width: 35%;
 `;
 const InputTit = styled.div`
   font-size: 1.2rem;
@@ -152,26 +153,40 @@ const EditSongs = () => {
   const searchQuery = query.get("q") || "";
   const setEditSongBool = useSetRecoilState(EditSongBoolean);
   const [songList, setSongList] = useRecoilState(songs);
+  const localSongs = useRecoilValue(songs);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   const editBoxClose = () => {
     setEditSongBool(false);
   };
-  const onValid = ({ singer, title }: IForm) => {
+  const onValid = async ({ singer, title }: IForm) => {
     setValue("singer", "");
     setValue("title", "");
-    const newData = { id: searchQuery, singer: singer, title: title };
-    console.log("songlist:", songList);
-
-    songList.map((item: IForm) =>
-      item.id === +searchQuery ? setSongList([newData, ...songList]) : item
+    const newData = await { id: Date.now(), singer: singer, title: title };
+    await setSongList(
+      songList.filter((item: IForm) => item.id !== +searchQuery)
     );
-    localStorage.setItem("songs", JSON.stringify(songList));
-  };
-  const editSongAlert = () => {
+    await setSongList((oldValue: any) => [
+      {
+        id: Date.now(),
+        singer: singer,
+        title: title,
+      },
+      ...oldValue,
+    ]);
     alert("입력하신 노래가 수정되었습니다🎶");
     setEditSongBool(false);
     navigate("/");
-    localStorage.setItem("songs", JSON.stringify(songList));
+
+    console.log(songList);
+  };
+
+  localStorage.setItem("songs", JSON.stringify(localSongs));
+
+  const editSongAlert = () => {
+    alert("수정하기 창을 닫습니다");
+    setEditSongBool(false);
+    navigate("/");
+    // localStorage.setItem("songs", JSON.stringify(songList));
   };
   const deleteSong = () => {
     setSongList(songList.filter((item: IForm) => item.id !== +searchQuery));
@@ -223,7 +238,7 @@ const EditSongs = () => {
           <InputAddButton>수정</InputAddButton>
         </InputBox>
         <ButtonWrap>
-          <AddButton onClick={editSongAlert}>노래수정하기</AddButton>
+          <AddButton onClick={editSongAlert}>창 닫기</AddButton>
           <AddButton onClick={deleteSong}>노래삭제하기</AddButton>
         </ButtonWrap>
       </AddBox>

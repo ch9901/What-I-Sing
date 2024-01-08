@@ -91,7 +91,7 @@ const InputBox = styled.form`
     margin-top: 1rem;
     border: none;
     border-bottom: 0.1rem solid #000;
-    width: 28rem;
+    width: 100%;
     font-size: 1rem;
     &:placehorder {
       color: #888;
@@ -104,6 +104,7 @@ const InputBox = styled.form`
 const Input = styled.div`
   display: flex;
   flex-direction: column;
+  width: 35%;
 `;
 const InputTit = styled.div`
   font-size: 1.2rem;
